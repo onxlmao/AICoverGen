@@ -2,21 +2,21 @@
     {
         "name": "Emilia",
         "url": "https://huggingface.co/RinkaEmina/RVC_Sharing/resolve/main/Emilia%20V2%2048000.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b88572-IzTwXEHSobRs.jpg",
         "description": "Emilia from Re:Zero",
         "credit": "rinka4759"
     },
     {
         "name": "Klee",
         "url": "https://huggingface.co/qweshkka/Klee/resolve/main/Klee.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b205597-2JQflQL0aDTW.jpg",
         "description": "Klee from Genshin Impact",
         "credit": "qweshsmashjuicefruity"
     },
     {
         "name": "Yelan",
         "url": "https://huggingface.co/iroaK/RVC2_Yelan_GenshinImpact/resolve/main/YelanJP.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b174356-jAJlw2yUyPuw.jpg",
         "description": "Yelan from Genshin Impact",
         "credit": "iroak"
     },
@@ -30,21 +30,21 @@
     {
         "name": "Lisa",
         "url": "https://huggingface.co/qweshkka/Lisa2ver/resolve/main/Lisa.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b21960-3stfLc0uwgoT.png",
         "description": "Lisa from Genshin Impact",
         "credit": "qweshsmashjuicefruity"
     },
     {
         "name": "Kazuha",
         "url": "https://huggingface.co/iroaK/RVC2_Kazuha_GenshinImpact/resolve/main/Kazuha.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b33219-pJzwYuuZKNK2.jpg",
         "description": "Kaedehara Kazuha from Genshin Impact",
         "credit": "iroak"
     },
     {
         "name": "Barbara",
         "url": "https://huggingface.co/iroaK/RVC2_Barbara_GenshinImpact/resolve/main/BarbaraJP.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b203315-g2mtXphNDv7J.jpg",
         "description": "Barbara from Genshin Impact",
         "credit": "iroak"
     },
@@ -79,21 +79,21 @@
     {
         "name": "Fu Xuan",
         "url": "https://huggingface.co/Juneuarie/FuXuan/resolve/main/FuXuan.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b350304-eT9TDtXskxR0.png",
         "description": "Fu Xuan from Honkai Star Rail (HSR)",
         "credit": "__june"
     },
     {
         "name": "Xinyan",
         "url": "https://huggingface.co/AnimeSessions/rvc_voice_models/resolve/main/XinyanRVC.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b233894-5b4N0XXJugLT.jpg",
         "description": "Xinyan from Genshin Impact",
         "credit": "shyelijah"
     },
     {
         "name": "Enterprise",
         "url": "https://huggingface.co/NoIdea4Username/NoIdeaRVCCollection/resolve/main/Enterprise-JP.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b130082-WiDwPynLeBXD.jpg",
         "description": "Enterprise from Azur Lane",
         "credit": "minecraftian47"
     },
@@ -111,6 +111,7 @@
         "description": "Ironmouse",
         "credit": "ladyimpa"
     },
+    },
     {
         "name": "Bratishkinoff",
         "url": "https://huggingface.co/JHmashups/Bratishkinoff/resolve/main/bratishkin.zip",
@@ -121,7 +122,7 @@
     {
         "name": "Yagami Light",
         "url": "https://huggingface.co/geekdom-tr/Yagami-Light/resolve/main/Yagami-Light.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b80-26EhwSsSqQ50.png",
         "description": "Yagami Light from Death Note",
         "credit": "takka"
     },
@@ -139,17 +140,18 @@
         "description": "Michiru Kagemori from Brand New Animal (300 Epochs)",
         "credit": "wolfmk"
     },
+    },
     {
         "name": "Kaeya",
         "url": "https://huggingface.co/nlordqting4444/nlordqtingRVC/resolve/main/Kaeya.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b190868-DXB9wDaVMrwS.png",
         "description": "Kaeya (VA: Kohsuke Toriumi) from Genshin Impact (300 Epochs)",
         "credit": "nlordqting4444"
     },
     {
         "name": "Mona Megistus",
         "url": "https://huggingface.co/AnimeSessions/rvc_voice_models/resolve/main/MonaRVC.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b209678-HDfjVNPXnWPd.png",
         "description": "Mona Megistus from Genshin Impact (250 Epochs)",
         "credit": "shyelijah"
     },
@@ -170,21 +172,21 @@
     {
         "name": "Neco Arc",
         "url": "https://huggingface.co/Ozzy-Helix/Neko_Arc_Neko_Aruku.RVCv2/resolve/main/Neko_Arc-V3-E600.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b46809-vugEKQGhg4Hc.png",
         "description": "Neco Arc (Neco-Aruku) (600 Epochs)",
         "credit": "ozzy_helix_"
     },
     {
         "name": "Makima",
         "url": "https://huggingface.co/andolei/makimaen/resolve/main/makima-en-dub.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b137080-UHcynYNjb5ZU.jpg",
         "description": "Makima from Chainsaw Man (300 Epochs)",
         "credit": "andpproximately"
     },
     {
         "name": "PomPom",
         "url": "https://huggingface.co/benitheworld/pom-pom/resolve/main/pom-pom.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b212222-WoWvTowwLTrp.png",
         "description": "PomPom from Honkai Star Rail (HSR) (200 Epochs)",
         "credit": "kannysoap"
     },
@@ -198,21 +200,21 @@
     {
         "name": "Ochaco Uraraka",
         "url": "https://huggingface.co/legitdark/JP-Uraraka-By-Dan/resolve/main/JP-Uraraka-By-Dan.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b89221-gSF2a4gPbG4m.png",
         "description": "Ochaco Uraraka from Boku no Hero Academia (320 Epochs)",
         "credit": "danthevegetable"
     },
     {
         "name": "Sunaokami Shiroko",
         "url": "https://huggingface.co/LordDavis778/BlueArchivevoicemodels/resolve/main/SunaokamiShiroko.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b245672-3Ehhnue9efnx.png",
         "description": "Sunaokami Shiroko from Blue Archive (500 Epochs)",
         "credit": "lorddavis778"
     },
     {
         "name": "Dainsleif",
         "url": "https://huggingface.co/Nasleyy/NasleyRVC/resolve/main/Voices/Dainsleif/Dainsleif.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b350308-gSehKXpdEb4e.png",
         "description": "Dainsleif from Genshin Impact (335 Epochs)",
         "credit": "nasley"
     },
@@ -233,7 +235,7 @@
     {
         "name": "Kaguya Shinomiya",
         "url": "https://huggingface.co/1ski/1skiRVCModels/resolve/main/kaguyav5.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b120649-NPaWaIpWy60E.png",
         "description": "Kaguya Shinomiya from Kaguya-Sama Love is War (200 Epochs)",
         "credit": "1ski"
     },
@@ -247,7 +249,7 @@
     {
         "name": "Yuigahama Yui",
         "url": "https://huggingface.co/Zerokano/Yuigahama_Yui-RVCv2/resolve/main/Yuigahama_Yui.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b67069-6B3xnHfJUO0F.png",
         "description": "Yuigahama Yui from Yahari Ore no Seishun Love Comedy (250 Epochs)",
         "credit": "zerokano"
     },
@@ -261,7 +263,7 @@
     {
         "name": "Kana Arima",
         "url": "https://huggingface.co/ddoumakunn/arimakanna/resolve/main/arimakanna.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b188783-77orwP7vNuNg.png",
         "description": "Kana Arima from Oshi no Ko (250 Epochs)",
         "credit": "ddoumakunn"
     },
@@ -282,14 +284,14 @@
     {
         "name": "Izuku Midoriya",
         "url": "https://huggingface.co/BigGuy635/MHA/resolve/main/DekuJP.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b89028-8w1I9o1ISHMg.png",
         "description": "Izuku Midoriya from Boku no Hero Academia (100 Epochs)",
         "credit": "khjjnoffical"
     },
     {
         "name": "Kurumi Shiratori",
         "url": "https://huggingface.co/HarunaKasuga/YoshikoTsushima/resolve/main/KurumiShiratori.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b207329-MJPxW3wSljkW.jpg",
         "description": "Kurumi Shiratori from D4DJ (500 Epochs)",
         "credit": "seakrait"
     },
@@ -303,28 +305,28 @@
     {
         "name": "Black Panther",
         "url": "https://huggingface.co/TJKAI/BlackPannther/resolve/main/BlackPanther.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/40174.jpg",
         "description": "Black Panther (Chadwick Boseman) (300 Epochs)",
         "credit": "tjkcreative"
     },
     {
         "name": "Gawr Gura",
         "url": "https://pixeldrain.com/u/3tJmABXA",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b206017-SsxyG3HOaMdv.jpg",
         "description": "Gawr Gura from Hololive EN",
         "credit": "dacoolkid44 & hijack"
     },
     {
         "name": "Houshou Marine",
         "url": "https://pixeldrain.com/u/L1YLfZyU",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b169489-PQ0lLCD2BoKG.jpg",
         "description": "Houshou Marine from Hololive JP",
         "credit": "dacoolkid44 & hijack"
     },
     {
         "name": "Hoshimachi Suisei",
         "url": "https://pixeldrain.com/u/YP89C21u",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b169504-3zEJa7EJGryQ.jpg",
         "description": "Hoshimachi Suisei from Hololive JP",
         "credit": "dacoolkid44 & hijack & Maki Ligon"
     },
@@ -345,21 +347,21 @@
     {
         "name": "Ado",
         "url": "https://huggingface.co/pjesek/AdoRVCv2/resolve/main/AdoRVCv2.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b127212-FVm2tD0erQ5B.jpg",
         "description": "Talented JP artist (500 epochs)",
         "credit": "pjesek"
     },
     {
         "name": "LiSA",
         "url": "https://huggingface.co/phant0m4r/LiSA/resolve/main/LiSA.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b21960-3stfLc0uwgoT.png",
         "description": "Talented JP artist (400 epochs)",
         "credit": "Phant0m"
     },
     {
         "name": "Kokomi",
         "url": "https://huggingface.co/benitheworld/kokomi-kr/resolve/main/kokomi-kr.zip",
-        "image": "",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/medium/b90109-hr98ksrKzMOe.png",
         "description": "Kokomi from Genshin Impact KR (300 Epochs)",
         "credit": "kannysoap"
     },

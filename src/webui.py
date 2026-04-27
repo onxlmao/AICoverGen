@@ -8,12 +8,16 @@ from argparse import ArgumentParser
 import gradio as gr
 
 from main import song_cover_pipeline
+from download_models import ModelDownloader
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 mdxnet_models_dir = os.path.join(BASE_DIR, 'mdxnet_models')
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 output_dir = os.path.join(BASE_DIR, 'song_output')
+
+# Initialize JSON model downloader
+model_downloader = ModelDownloader()
 
 
 def get_current_models(models_dir):
@@ -154,6 +158,67 @@ def show_hop_slider(pitch_detection_algo):
         return gr.update(visible=False)
 
 
+def download_json_voice_model(model_name, progress=gr.Progress()):
+    """Download a voice model from the JSON manifest (adapted from JSON-RVC-Inference)."""
+    try:
+        def progress_cb(msg):
+            progress(0.5, desc=msg)
+
+        result = model_downloader.download_voice_model(model_name, progress_callback=progress_cb)
+        return result
+    except Exception as e:
+        raise gr.Error(str(e))
+
+
+def download_all_required_models(progress=gr.Progress()):
+    """Download all required core and MDX-Net models from the JSON manifest."""
+    try:
+        messages = []
+
+        def progress_cb(msg):
+            messages.append(msg)
+            progress(0.5, desc=msg)
+
+        core_ok = model_downloader.download_core()
+        mdxnet_ok = model_downloader.download_mdxnet()
+
+        if core_ok and mdxnet_ok:
+            return '[+] All required models downloaded successfully!'
+        else:
+            return '[ERROR] Some models failed to download. Check console for details.'
+    except Exception as e:
+        raise gr.Error(str(e))
+
+
+def check_model_status():
+    """Check which required models are already downloaded."""
+    existing = model_downloader.check_existing()
+
+    lines = []
+    lines.append('## Core Models')
+    for name, exists in existing['core'].items():
+        status = 'OK' if exists else 'MISSING'
+        lines.append(f'- {name}: **{status}**')
+
+    lines.append('')
+    lines.append('## MDX-Net Models')
+    for name, exists in existing['mdxnet'].items():
+        status = 'OK' if exists else 'MISSING'
+        lines.append(f'- {name}: **{status}**')
+
+    voice_count = sum(existing['voice'].values())
+    voice_total = len(existing['voice'])
+    lines.append('')
+    lines.append(f'## Voice Models: {voice_count}/{voice_total} downloaded')
+
+    return '\n'.join(lines)
+
+
+ndef load_json_voice_models():
+    """Load voice model list from the JSON manifest."""
+    return model_downloader.get_voice_model_list()
+
+
 if __name__ == '__main__':
     parser = ArgumentParser(description='Generate a AI cover song in the song_output/id directory.', add_help=True)
     parser.add_argument("--share", action="store_true", dest="share_enabled", default=False, help="Enable sharing")
@@ -165,6 +230,9 @@ if __name__ == '__main__':
     voice_models = get_current_models(rvc_models_dir)
     with open(os.path.join(rvc_models_dir, 'public_models.json'), encoding='utf8') as infile:
         public_models = json.load(infile)
+
+    # Load voice model list from JSON manifest
+    json_voice_model_list = model_downloader.get_voice_model_list()
 
     with gr.Blocks(title='AICoverGenWebUI') as app:
 
@@ -245,13 +313,55 @@ if __name__ == '__main__':
         # Download tab
         with gr.Tab('Download model'):
 
+            with gr.Tab('From JSON Index'):
+                gr.Markdown('## Download from JSON Manifest')
+                gr.Markdown('- Select a voice model from the dropdown (populated from `models_manifest.json`)')
+                gr.Markdown('- Click **Download Model** to fetch and install the model')
+                gr.Markdown('- The model zip (`.pth` + optional `.index`) will be extracted to `rvc_models/<ModelName>/`')
+
+                with gr.Row():
+                    json_model_select = gr.Dropdown(
+                        choices=sorted(json_voice_model_list),
+                        label='Voice Model',
+                        info='Choose from the JSON manifest model list'
+                    )
+                    json_download_btn = gr.Button('Download Model', variant='primary')
+
+                json_dl_output = gr.Text(label='Status', interactive=False)
+
+                json_download_btn.click(
+                    download_json_voice_model,
+                    inputs=[json_model_select],
+                    outputs=[json_dl_output]
+                )
+
+                gr.Markdown('---')
+                gr.Markdown('### Required Models (Core + MDX-Net)')
+                gr.Markdown('Download the base models needed for AI cover generation (hubert_base.pt, rmvpe.pt, and MDX-Net .onnx models).')
+
+                with gr.Row():
+                    dl_required_btn = gr.Button('Download Required Models', variant='secondary')
+                    check_status_btn = gr.Button('Check Model Status')
+
+                required_dl_output = gr.Text(label='Required Models Status', interactive=False)
+                model_status_md = gr.Markdown('')
+
+                dl_required_btn.click(
+                    download_all_required_models,
+                    outputs=[required_dl_output]
+                )
+                check_status_btn.click(
+                    check_model_status,
+                    outputs=[model_status_md]
+                )
+
             with gr.Tab('From HuggingFace/Pixeldrain URL'):
                 with gr.Row():
                     model_zip_link = gr.Text(label='Download link to model', info='Should be a zip file containing a .pth model file and an optional .index file.')
                     model_name = gr.Text(label='Name your model', info='Give your new model a unique name from your other voice models.')
 
                 with gr.Row():
-                    download_btn = gr.Button('Download 🌐', variant='primary', scale=19)
+                    download_btn = gr.Button('Download', variant='primary', scale=19)
                     dl_output_message = gr.Text(label='Output Message', interactive=False, scale=20)
 
                 download_btn.click(download_online_model, inputs=[model_zip_link, model_name], outputs=dl_output_message)
@@ -281,7 +391,7 @@ if __name__ == '__main__':
                     pub_model_name = gr.Text(label='Model name')
 
                 with gr.Row():
-                    download_pub_btn = gr.Button('Download 🌐', variant='primary', scale=19)
+                    download_pub_btn = gr.Button('Download', variant='primary', scale=19)
                     pub_dl_output_message = gr.Text(label='Output Message', interactive=False, scale=20)
 
                 filter_tags = gr.CheckboxGroup(value=[], label='Show voice models with tags', choices=[])

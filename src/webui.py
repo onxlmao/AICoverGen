@@ -157,10 +157,53 @@ def show_hop_slider(pitch_detection_algo):
         return gr.update(visible=False)
 
 
+# ── JSON Index tab helpers ────────────────────────────────────────────
+
+def get_model_image_url(model_name):
+    """Return the image URL for a model from list.json."""
+    model = dl.get_voice_model(model_name)
+    if model and model.get('image', '').startswith('http'):
+        return model['image']
+    default_img = os.path.join(BASE_DIR, 'images', 'default_model.png')
+    return default_img if os.path.exists(default_img) else None
+
+
+def on_json_model_select(model_name):
+    """When a model is selected, update image + info."""
+    model = dl.get_voice_model(model_name)
+    if not model:
+        return gr.update(value=None), gr.update(value="Select a model...")
+
+    image_url = get_model_image_url(model_name)
+    info_text = (
+        f"**{model['name']}**\n\n"
+        f"{model.get('description', 'No description')}\n\n"
+        f"Credit: {model.get('credit', 'N/A')}\n\n"
+        f"URL: `{model.get('url', '')}`"
+    )
+    downloaded = os.path.exists(os.path.join(rvc_models_dir, model_name))
+    if downloaded:
+        info_text += "\n\n✅ **Already downloaded**"
+    else:
+        info_text += "\n\n⬇️ Click **Download** to install"
+
+    return gr.update(value=image_url), gr.update(value=info_text)
+
+
 def download_json_voice_model(model_name, progress=gr.Progress()):
     """Download a voice model from rvc_models/list.json."""
     try:
-        return dl.download_voice_model(model_name, progress_callback=lambda m: progress(0.5, desc=m))
+        result = dl.download_voice_model(model_name, progress_callback=lambda m: progress(0.5, desc=m))
+        # Refresh info after download
+        model = dl.get_voice_model(model_name)
+        image_url = get_model_image_url(model_name)
+        info_text = (
+            f"**{model['name']}**\n\n"
+            f"{model.get('description', '')}\n\n"
+            f"Credit: {model.get('credit', 'N/A')}\n\n"
+            f"✅ **Downloaded!**\n\n{result}"
+        )
+        return result, gr.update(value=image_url), gr.update(value=info_text)
     except Exception as e:
         raise gr.Error(str(e))
 
@@ -199,7 +242,23 @@ if __name__ == '__main__':
         public_models = json.load(infile)
 
     # Load voice model list from rvc_models/list.json
-    json_voice_model_list = dl.get_voice_list()
+    json_voice_models = dl.get_voice_list()
+    json_voice_names = sorted([m['name'] for m in json_voice_models])
+
+    # Build gallery of model images
+    default_img = os.path.join(BASE_DIR, 'images', 'default_model.png')
+    gallery_images = []
+    gallery_captions = []
+    for m in json_voice_models:
+        img = m.get('image', '')
+        if img and img.startswith('http'):
+            gallery_images.append(img)
+        elif os.path.exists(default_img):
+            gallery_images.append(default_img)
+        else:
+            gallery_images.append(None)
+        status = "✅" if os.path.exists(os.path.join(rvc_models_dir, m['name'])) else "⬇️"
+        gallery_captions.append(f"{status} {m['name']}")
 
     with gr.Blocks(title='AICoverGenWebUI') as app:
 
@@ -281,45 +340,69 @@ if __name__ == '__main__':
         with gr.Tab('Download model'):
 
             with gr.Tab('From JSON Index'):
-                gr.Markdown('## Download from JSON Index')
-                gr.Markdown('- Select a voice model from the dropdown (populated from `rvc_models/list.json`)')
-                gr.Markdown('- Click **Download Model** to fetch and install the model')
-                gr.Markdown('- The model zip (`.pth` + optional `.index`) will be extracted to `rvc_models/<ModelName>/`')
+                gr.Markdown('## 📋 Voice Model Gallery')
+                gr.Markdown('Select a model from the dropdown or browse the gallery. Click **Download** to install.')
+
+                # Gallery of all model images
+                model_gallery = gr.Gallery(
+                    value=gallery_images,
+                    labels=gallery_captions,
+                    columns=6,
+                    rows=10,
+                    height='auto',
+                    object_fit='cover',
+                    allow_preview=False,
+                    show_label=False,
+                )
 
                 with gr.Row():
-                    json_model_select = gr.Dropdown(
-                        choices=sorted(json_voice_model_list),
-                        label='Voice Model',
-                        info='Choose from the JSON model list'
-                    )
-                    json_download_btn = gr.Button('Download Model', variant='primary')
+                    with gr.Column(scale=1):
+                        json_model_select = gr.Dropdown(
+                            choices=json_voice_names,
+                            label='Voice Model',
+                            info='Choose a model to download'
+                        )
+                    with gr.Column(scale=1):
+                        json_download_btn = gr.Button('Download Model', variant='primary')
+                    with gr.Column(scale=1):
+                        dl_required_btn = gr.Button('Download Required Models', variant='secondary')
+                    with gr.Column(scale=1):
+                        check_status_btn = gr.Button('Check Model Status')
 
-                json_dl_output = gr.Text(label='Status', interactive=False)
+                # Model preview: image + info
+                with gr.Row():
+                    with gr.Column(scale=1):
+                        model_preview_image = gr.Image(
+                            label='Model Preview',
+                            height=300,
+                            interactive=False,
+                            show_label=True,
+                        )
+                    with gr.Column(scale=2):
+                        model_preview_info = gr.Markdown('Select a model to see details...')
+
+                json_dl_output = gr.Text(label='Download Status', interactive=False)
+
+                # Events
+                json_model_select.change(
+                    on_json_model_select,
+                    inputs=[json_model_select],
+                    outputs=[model_preview_image, model_preview_info]
+                )
 
                 json_download_btn.click(
                     download_json_voice_model,
                     inputs=[json_model_select],
-                    outputs=[json_dl_output]
+                    outputs=[json_dl_output, model_preview_image, model_preview_info]
                 )
-
-                gr.Markdown('---')
-                gr.Markdown('### Required Models (Hubert / RMVPE / MDX-Net)')
-                gr.Markdown('Download base models from `models_manifest.json` (hubert_base.pt, rmvpe.pt, and MDX-Net .onnx files).')
-
-                with gr.Row():
-                    dl_required_btn = gr.Button('Download Required Models', variant='secondary')
-                    check_status_btn = gr.Button('Check Model Status')
-
-                required_dl_output = gr.Text(label='Required Models Status', interactive=False)
-                model_status_md = gr.Markdown('')
 
                 dl_required_btn.click(
                     download_all_required_models,
-                    outputs=[required_dl_output]
+                    outputs=[json_dl_output]
                 )
                 check_status_btn.click(
                     check_model_status,
-                    outputs=[model_status_md]
+                    outputs=[json_dl_output]
                 )
 
             with gr.Tab('From HuggingFace/Pixeldrain URL'):

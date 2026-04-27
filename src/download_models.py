@@ -1,16 +1,15 @@
 """
 JSON Model Downloader for AICoverGen
 =====================================
-Adapted from JSON-RVC-Inference (https://github.com/ArkanDash/JSON-RVC-Inference)
 
 Two JSON files:
-  - models_manifest.json  (root)  : hubert_base.pt, rmvpe.pt, MDX-Net .onnx models
-  - rvc_models/list.json          : voice model list + zip download URLs
+  - models_manifest.json  (root)  : hubert_base.pt, rmvpe.pt, MDX-Net .onnx
+  - rvc_models/list.json          : voice models (name, url, image, description, credit)
 
-CLI:
-    python src/download_models.py                   # download missing required models
-    python src/download_models.py --voice NAME      # download a voice model
-    python src/download_models.py --check           # check model status
+Usage:
+    python src/download_models.py                   download required models
+    python src/download_models.py --voice NAME      download a voice model
+    python src/download_models.py --check           check model status
 """
 
 import json
@@ -26,19 +25,23 @@ import requests
 BASE_DIR = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = BASE_DIR / 'models_manifest.json'
 VOICE_LIST_PATH = BASE_DIR / 'rvc_models' / 'list.json'
-
-rvc_models_dir = BASE_DIR / 'rvc_models'
+DEFAULT_IMAGE = BASE_DIR / 'images' / 'default_model.png'
+RVC_MODELS_DIR = BASE_DIR / 'rvc_models'
 
 
 def _load_json(path):
-    path = Path(path)
-    if not path.exists():
-        raise FileNotFoundError(f"JSON file not found: {path}")
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
-def _download(url, dest, label=""):
+def _pixeldrain_url(url):
+    """Convert pixeldrain page URL to API download URL."""
+    if 'pixeldrain.com' in url:
+        return f"https://pixeldrain.com/api/file/{url.rstrip('/').split('/')[-1]}"
+    return url
+
+
+def _download_file(url, dest, label=""):
     """Download a file to dest. Skip if already exists."""
     dest = Path(dest)
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -47,13 +50,9 @@ def _download(url, dest, label=""):
         return True
 
     tag = f"[{label}] " if label else ""
-    dl_url = url
-    if 'pixeldrain.com' in url:
-        dl_url = f"https://pixeldrain.com/api/file/{url.rstrip('/').split('/')[-1]}"
-
     print(f"  {tag}Downloading {dest.name}...", end='', flush=True)
     try:
-        with requests.get(dl_url, stream=True, timeout=60) as r:
+        with requests.get(_pixeldrain_url(url), stream=True, timeout=60) as r:
             r.raise_for_status()
             with open(dest, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
@@ -71,78 +70,74 @@ def _download(url, dest, label=""):
         return False
 
 
+# ── Required models (hubert / rmvpe / mdxnet) ─────────────────────────
+
 def download_required():
     """Download all required models from models_manifest.json."""
     manifest = _load_json(MANIFEST_PATH)
     print("Downloading required models...")
-    ok = True
-    for rel_path, url in manifest.items():
-        dest = BASE_DIR / rel_path
-        label = Path(rel_path).parent.name
-        if not _download(url, dest, label=label):
-            ok = False
-    if ok:
-        print("All required models ready.")
+    ok = all(_download_file(url, BASE_DIR / rel, Path(rel).parent.name)
+             for rel, url in manifest.items())
+    print("All required models ready." if ok else "Some downloads failed.")
     return ok
 
 
-def check_status():
-    """Print status of required and voice models."""
-    manifest = _load_json(MANIFEST_PATH)
-    voice_data = _load_json(VOICE_LIST_PATH)
-
-    print("\nRequired models:")
-    for rel_path in manifest:
-        name = Path(rel_path).name
-        exists = (BASE_DIR / rel_path).exists()
-        print(f"  {'[OK]' if exists else '[MISSING]'} {name}")
-
-    voice_list = voice_data.get('list', [])
-    owned = sum(1 for n in voice_list if (rvc_models_dir / n).exists())
-    print(f"\nVoice models: {owned}/{len(voice_list)} downloaded")
-
+# ── Voice models ──────────────────────────────────────────────────────
 
 def get_voice_list():
-    """Return the voice model name list from list.json."""
-    return _load_json(VOICE_LIST_PATH).get('list', [])
+    """Return list of voice model dicts from list.json."""
+    return _load_json(VOICE_LIST_PATH)
+
+
+def get_voice_names():
+    """Return list of voice model names."""
+    return [m['name'] for m in get_voice_list()]
+
+
+def get_voice_model(model_name):
+    """Get a voice model dict by name, or None."""
+    for m in get_voice_list():
+        if m['name'] == model_name:
+            return m
+    return None
+
+
+def get_model_image(model_name):
+    """Return image URL/path for a model. Falls back to default placeholder."""
+    model = get_voice_model(model_name)
+    if not model:
+        return str(DEFAULT_IMAGE)
+    image = model.get('image', '')
+    if image and image.startswith('http'):
+        return image
+    return str(DEFAULT_IMAGE)
 
 
 def download_voice_model(model_name, progress_callback=None):
-    """Download a voice model by name. Adapted from JSON-RVC-Inference."""
-    voice_data = _load_json(VOICE_LIST_PATH)
-    model_list = voice_data.get('list', [])
-    model_data = voice_data.get('model_data', [])
+    """Download and extract a voice model by name."""
+    model = get_voice_model(model_name)
+    if not model:
+        return f"[ERROR] '{model_name}' not found in list.json"
 
-    if model_name not in model_list:
-        return f"[ERROR] '{model_name}' not found in rvc_models/list.json"
+    url = model.get('url', '')
+    if not url:
+        return f"[ERROR] '{model_name}' has no download URL"
 
-    dest = rvc_models_dir / model_name
+    dest = RVC_MODELS_DIR / model_name
     if dest.exists():
         return f"[SKIP] '{model_name}' already exists"
-
-    # find entry: item[1] == model_name, item[2] == zip url
-    zip_url = None
-    for item in model_data:
-        if len(item) >= 3 and item[1] == model_name:
-            zip_url = item[2]
-            break
-    if not zip_url:
-        return f"[ERROR] '{model_name}' has no download URL in list.json"
 
     if progress_callback:
         progress_callback(f"[~] Downloading '{model_name}'...")
 
     try:
         tmp = tempfile.mkdtemp(prefix='aicovergen_dl_')
-        dl_url = zip_url
-        if 'pixeldrain.com' in zip_url:
-            dl_url = f"https://pixeldrain.com/api/file/{zip_url.rstrip('/').split('/')[-1]}"
-
         zip_path = os.path.join(tmp, f'{model_name}.zip')
-        if progress_callback:
-            progress_callback(f"[~] Fetching zip...")
 
-        with requests.get(dl_url, stream=True, timeout=60) as r:
+        if progress_callback:
+            progress_callback("[~] Fetching zip...")
+
+        with requests.get(_pixeldrain_url(url), stream=True, timeout=60) as r:
             r.raise_for_status()
             with open(zip_path, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
@@ -187,6 +182,25 @@ def download_voice_model(model_name, progress_callback=None):
         return f"[ERROR] '{model_name}': {e}"
 
 
+# ── Status check ──────────────────────────────────────────────────────
+
+def check_status():
+    """Print status of all models."""
+    manifest = _load_json(MANIFEST_PATH)
+    voice_list = get_voice_list()
+
+    print("\nRequired models:")
+    for rel_path in manifest:
+        name = Path(rel_path).name
+        exists = (BASE_DIR / rel_path).exists()
+        print(f"  {'[OK]' if exists else '[MISSING]'} {name}")
+
+    owned = sum(1 for m in voice_list if (RVC_MODELS_DIR / m['name']).exists())
+    print(f"\nVoice models: {owned}/{len(voice_list)} downloaded")
+
+
+# ── CLI ───────────────────────────────────────────────────────────────
+
 if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else ''
 
@@ -196,21 +210,16 @@ if __name__ == '__main__':
               "  python src/download_models.py --voice NAME download voice model\n"
               "  python src/download_models.py --check      check model status\n"
               "  python src/download_models.py --list       list voice models")
-
     elif cmd == '--check':
         check_status()
-
     elif cmd == '--list':
-        names = get_voice_list()
-        for i, n in enumerate(names, 1):
-            tag = " [OWNED]" if (rvc_models_dir / n).exists() else ""
-            print(f"  {i:3d}. {n}{tag}")
-
+        for i, m in enumerate(get_voice_list(), 1):
+            tag = " [OWNED]" if (RVC_MODELS_DIR / m['name']).exists() else ""
+            print(f"  {i:3d}. {m['name']}{tag}  - {m.get('description', '')}")
     elif cmd == '--voice':
         if len(sys.argv) < 3:
             print("Error: specify model name. Example: --voice \"Klee\"")
             sys.exit(1)
         print(download_voice_model(sys.argv[2]))
-
     else:
         download_required()

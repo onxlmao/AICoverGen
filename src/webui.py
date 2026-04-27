@@ -1,23 +1,22 @@
 import json
 import os
 import shutil
+import sys
 import urllib.request
 import zipfile
 from argparse import ArgumentParser
+from io import StringIO
 
 import gradio as gr
 
 from main import song_cover_pipeline
-from download_models import ModelDownloader
+import download_models as dl
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 mdxnet_models_dir = os.path.join(BASE_DIR, 'mdxnet_models')
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 output_dir = os.path.join(BASE_DIR, 'song_output')
-
-# Initialize JSON model downloader
-model_downloader = ModelDownloader()
 
 
 def get_current_models(models_dir):
@@ -159,64 +158,32 @@ def show_hop_slider(pitch_detection_algo):
 
 
 def download_json_voice_model(model_name, progress=gr.Progress()):
-    """Download a voice model from the JSON manifest (adapted from JSON-RVC-Inference)."""
+    """Download a voice model from rvc_models/list.json."""
     try:
-        def progress_cb(msg):
-            progress(0.5, desc=msg)
-
-        result = model_downloader.download_voice_model(model_name, progress_callback=progress_cb)
-        return result
+        return dl.download_voice_model(model_name, progress_callback=lambda m: progress(0.5, desc=m))
     except Exception as e:
         raise gr.Error(str(e))
 
 
 def download_all_required_models(progress=gr.Progress()):
-    """Download all required core and MDX-Net models from the JSON manifest."""
+    """Download hubert, rmvpe, and MDX-Net models from models_manifest.json."""
     try:
-        messages = []
-
-        def progress_cb(msg):
-            messages.append(msg)
-            progress(0.5, desc=msg)
-
-        core_ok = model_downloader.download_core()
-        mdxnet_ok = model_downloader.download_mdxnet()
-
-        if core_ok and mdxnet_ok:
-            return '[+] All required models downloaded successfully!'
-        else:
-            return '[ERROR] Some models failed to download. Check console for details.'
+        ok = dl.download_required()
+        return '[+] All required models downloaded!' if ok else '[ERROR] Some downloads failed. Check console.'
     except Exception as e:
         raise gr.Error(str(e))
 
 
 def check_model_status():
-    """Check which required models are already downloaded."""
-    existing = model_downloader.check_existing()
-
-    lines = []
-    lines.append('## Core Models')
-    for name, exists in existing['core'].items():
-        status = 'OK' if exists else 'MISSING'
-        lines.append(f'- {name}: **{status}**')
-
-    lines.append('')
-    lines.append('## MDX-Net Models')
-    for name, exists in existing['mdxnet'].items():
-        status = 'OK' if exists else 'MISSING'
-        lines.append(f'- {name}: **{status}**')
-
-    voice_count = sum(existing['voice'].values())
-    voice_total = len(existing['voice'])
-    lines.append('')
-    lines.append(f'## Voice Models: {voice_count}/{voice_total} downloaded')
-
-    return '\n'.join(lines)
-
-
-ndef load_json_voice_models():
-    """Load voice model list from the JSON manifest."""
-    return model_downloader.get_voice_model_list()
+    """Check which models are present."""
+    try:
+        old_stdout = sys.stdout
+        sys.stdout = buf = StringIO()
+        dl.check_status()
+        sys.stdout = old_stdout
+        return buf.getvalue()
+    except Exception as e:
+        raise gr.Error(str(e))
 
 
 if __name__ == '__main__':
@@ -231,8 +198,8 @@ if __name__ == '__main__':
     with open(os.path.join(rvc_models_dir, 'public_models.json'), encoding='utf8') as infile:
         public_models = json.load(infile)
 
-    # Load voice model list from JSON manifest
-    json_voice_model_list = model_downloader.get_voice_model_list()
+    # Load voice model list from rvc_models/list.json
+    json_voice_model_list = dl.get_voice_list()
 
     with gr.Blocks(title='AICoverGenWebUI') as app:
 
@@ -314,8 +281,8 @@ if __name__ == '__main__':
         with gr.Tab('Download model'):
 
             with gr.Tab('From JSON Index'):
-                gr.Markdown('## Download from JSON Manifest')
-                gr.Markdown('- Select a voice model from the dropdown (populated from `models_manifest.json`)')
+                gr.Markdown('## Download from JSON Index')
+                gr.Markdown('- Select a voice model from the dropdown (populated from `rvc_models/list.json`)')
                 gr.Markdown('- Click **Download Model** to fetch and install the model')
                 gr.Markdown('- The model zip (`.pth` + optional `.index`) will be extracted to `rvc_models/<ModelName>/`')
 
@@ -323,7 +290,7 @@ if __name__ == '__main__':
                     json_model_select = gr.Dropdown(
                         choices=sorted(json_voice_model_list),
                         label='Voice Model',
-                        info='Choose from the JSON manifest model list'
+                        info='Choose from the JSON model list'
                     )
                     json_download_btn = gr.Button('Download Model', variant='primary')
 
@@ -336,8 +303,8 @@ if __name__ == '__main__':
                 )
 
                 gr.Markdown('---')
-                gr.Markdown('### Required Models (Core + MDX-Net)')
-                gr.Markdown('Download the base models needed for AI cover generation (hubert_base.pt, rmvpe.pt, and MDX-Net .onnx models).')
+                gr.Markdown('### Required Models (Hubert / RMVPE / MDX-Net)')
+                gr.Markdown('Download base models from `models_manifest.json` (hubert_base.pt, rmvpe.pt, and MDX-Net .onnx files).')
 
                 with gr.Row():
                     dl_required_btn = gr.Button('Download Required Models', variant='secondary')

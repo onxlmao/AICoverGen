@@ -17,15 +17,16 @@ import yt_dlp
 from pedalboard import Pedalboard, Reverb, Compressor, HighpassFilter
 from pedalboard.io import AudioFile
 from pydub import AudioSegment
-
-from mdx import run_mdx
-from rvc import Config, load_hubert, get_vc, rvc_infer
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+now_dir = os.path.join(BASE_DIR, 'src')
+sys.path.append(now_dir)
 mdxnet_models_dir = os.path.join(BASE_DIR, 'mdxnet_models')
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 output_dir = os.path.join(BASE_DIR, 'song_output')
+from mdx import run_mdx
+from rvc import Config, load_hubert, get_vc, rvc_infer
+
+
 
 
 def get_youtube_video_id(url, ignore_playlist=True):

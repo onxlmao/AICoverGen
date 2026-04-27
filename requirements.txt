@@ -12,7 +12,7 @@ librosa==0.9.1
 numpy
 onnxruntime_gpu
 praat-parselmouth>=0.4.2
-pedalboard==0.2.3
+pedalboard
 pydub==0.5.1
 pyworld==0.3.1
 Requests

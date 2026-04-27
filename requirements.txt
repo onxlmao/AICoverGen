@@ -9,7 +9,7 @@ pydantic==2.8.2
 pydantic_core==2.20.1
 lib==2.0.0
 librosa==0.9.1
-numpy==1.15.0
+numpy
 onnxruntime_gpu
 praat-parselmouth>=0.4.2
 pedalboard==0.2.3

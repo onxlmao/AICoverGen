@@ -3,6 +3,7 @@ import gc
 import hashlib
 import json
 import os
+import sys
 import shlex
 import subprocess
 from contextlib import suppress

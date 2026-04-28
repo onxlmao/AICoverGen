@@ -159,12 +159,26 @@ def show_hop_slider(pitch_detection_algo):
 
 # ── JSON Index tab helpers ────────────────────────────────────────────
 
-def get_model_image_url(model_name):
-    """Return the image URL for a model from list.json."""
+def get_model_image_path(model_name):
+    """Return the local image path for a model (downloads if needed)."""
+    default_img = os.path.join(BASE_DIR, 'images', 'default_model.png')
+    local_images_dir = os.path.join(BASE_DIR, 'images', 'models')
+
+    # Check for locally cached image
+    local_path = os.path.join(local_images_dir, f"{model_name}.jpg")
+    if os.path.exists(local_path):
+        return local_path
+
+    # Try to download from URL
     model = dl.get_voice_model(model_name)
     if model and model.get('image', '').startswith('http'):
-        return model['image']
-    default_img = os.path.join(BASE_DIR, 'images', 'default_model.png')
+        try:
+            os.makedirs(local_images_dir, exist_ok=True)
+            urllib.request.urlretrieve(model['image'], local_path)
+            return local_path
+        except Exception:
+            pass
+
     return default_img if os.path.exists(default_img) else None
 
 
@@ -174,7 +188,7 @@ def on_json_model_select(model_name):
     if not model:
         return gr.update(value=None), gr.update(value="Select a model...")
 
-    image_url = get_model_image_url(model_name)
+    image_url = get_model_image_path(model_name)
     info_text = (
         f"**{model['name']}**\n\n"
         f"{model.get('description', 'No description')}\n\n"
@@ -196,7 +210,7 @@ def download_json_voice_model(model_name, progress=gr.Progress()):
         result = dl.download_voice_model(model_name, progress_callback=lambda m: progress(0.5, desc=m))
         # Refresh info after download
         model = dl.get_voice_model(model_name)
-        image_url = get_model_image_url(model_name)
+        image_url = get_model_image_path(model_name)
         info_text = (
             f"**{model['name']}**\n\n"
             f"{model.get('description', '')}\n\n"
@@ -246,19 +260,38 @@ if __name__ == '__main__':
     json_voice_names = sorted([m['name'] for m in json_voice_models])
 
     # Build gallery of model images
+    # Gradio 6.x: Gallery value must be list of (image_path_or_url, caption) tuples
     default_img = os.path.join(BASE_DIR, 'images', 'default_model.png')
-    gallery_images = []
-    gallery_captions = []
+    local_images_dir = os.path.join(BASE_DIR, 'images', 'models')
+    os.makedirs(local_images_dir, exist_ok=True)
+
+    gallery_value = []
     for m in json_voice_models:
         img = m.get('image', '')
+        image_src = None
+
         if img and img.startswith('http'):
-            gallery_images.append(img)
+            # Download remote images locally to avoid hotlink protection issues
+            local_path = os.path.join(local_images_dir, f"{m['name']}.jpg")
+            if not os.path.exists(local_path):
+                try:
+                    urllib.request.urlretrieve(img, local_path)
+                except Exception:
+                    if os.path.exists(default_img):
+                        local_path = default_img
+                    else:
+                        continue  # skip if no image available
+            image_src = local_path
         elif os.path.exists(default_img):
-            gallery_images.append(default_img)
+            image_src = default_img
         else:
-            gallery_images.append(None)
+            continue  # skip models with no image
+
+        if image_src is None:
+            continue
+
         status = "✅" if os.path.exists(os.path.join(rvc_models_dir, m['name'])) else "⬇️"
-        gallery_captions.append(f"{status} {m['name']}")
+        gallery_value.append((image_src, f"{status} {m['name']}"))
 
     with gr.Blocks(title='AICoverGenWebUI') as app:
 
@@ -345,14 +378,15 @@ if __name__ == '__main__':
 
                 # Gallery of all model images
                 model_gallery = gr.Gallery(
-                    value=gallery_images,
-                    label=gallery_captions,
+                    value=gallery_value,
+                    label="Model Gallery",
                     columns=6,
                     rows=10,
                     height='auto',
                     object_fit='cover',
                     allow_preview=False,
                     show_label=False,
+                    selected_index=None,
                 )
 
                 with gr.Row():

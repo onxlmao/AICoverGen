@@ -12,6 +12,9 @@ rvc_models/rmvpe.pt
 song_output/*/*.wav
 song_output/*/*.mp3
 
+# Cached model images (downloaded at runtime from list.json URLs)
+images/models/
+
 # Replicate
 nb.ipynb
 output.mp3

@@ -1,7 +1,0 @@
-{
-    "hubert_base.pt": "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt",
-    "rmvpe.pt": "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/rmvpe.pt",
-    "mdxnet_models/UVR-MDX-NET-Voc_FT.onnx": "https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/uvr5_models/MDX/UVR-MDX-NET-Voc_FT.onnx",
-    "mdxnet_models/UVR_MDXNET_KARA_2.onnx": "https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/uvr5_models/MDX/UVR_MDXNET_KARA_2.onnx",
-    "mdxnet_models/Reverb_HQ_By_FoxJoy.onnx": "https://huggingface.co/NeoPy/Ultimate-Models/resolve/main/uvr5_models/MDX/Reverb_HQ_By_FoxJoy.onnx"
-}

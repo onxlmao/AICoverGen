@@ -346,7 +346,7 @@ if __name__ == '__main__':
                 # Gallery of all model images
                 model_gallery = gr.Gallery(
                     value=gallery_images,
-                    labels=gallery_captions,
+                    label=gallery_captions,
                     columns=6,
                     rows=10,
                     height='auto',
